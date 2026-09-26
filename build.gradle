@@ -1,0 +1,38 @@
+plugins {
+    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = '1.0.0'
+group = 'com.nsrautomations'
+
+base {
+    archivesName = 'NSR_Automations'
+}
+
+repositories {
+    // Add custom repositories here if needed
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.20.4"
+    mappings "net.fabricmc:yarn:1.20.4+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.15.7"
+    modImplementation "net.fabricmc:fabric-api:fabric-api:0.95.4+1.20.4"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release.set(17)
+}
+
+java {
+    withSourcesJar()
+}
