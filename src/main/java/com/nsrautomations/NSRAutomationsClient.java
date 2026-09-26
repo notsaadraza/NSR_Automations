@@ -2,7 +2,7 @@ package com.nsrautomations;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -28,7 +28,7 @@ public class NSRAutomationsClient implements ClientModInitializer {
     private static final Pattern TYPE_GAME_PATTERN = Pattern.compile(
             "(?im)^\\s*\\|\\s*Type\\s*(?:\u2192|->)\\s*(.+?)\\s*$");
 
-    // Scheduled executor to handle 2-3 seconds natural delay before answering
+    // Scheduled executor to handle natural delay before answering
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
     private static final Random RANDOM = new Random();
 
@@ -110,10 +110,9 @@ public class NSRAutomationsClient implements ClientModInitializer {
     // Supports + - * / ^ (power), parentheses, unary +/-, and now:
     //   \u221a  (square root, e.g. \u221a100)
     //   \u00d7 \u00f7 (multiply/divide symbols, as alternates to * and /)
-    private double eval(String rawExpression) {
-        String processed = rawExpression.replace('\u00d7', '*').replace('\u00f7', '/');
-        processed = processed.replaceAll("[xX]", "*");
-        final String str = processed; // must be effectively final to be used inside the anonymous class below
+    private double eval(String str) {
+        str = str.replace('\u00d7', '*').replace('\u00f7', '/');
+        str = str.replaceAll("[xX]", "*");
         return new Object() {
             int pos = -1, ch;
 
@@ -196,15 +195,16 @@ public class NSRAutomationsClient implements ClientModInitializer {
     }
 
     private void delayedSendChatMessage(String message) {
-        long delay = 2000 + RANDOM.nextInt(1000);
+        // Delay set to 2.00s - 2.50s (2000ms to 2500ms)
+        long delay = 2000 + RANDOM.nextInt(500);
 
         SCHEDULER.schedule(() -> {
             try {
-                Minecraft client = Minecraft.getInstance();
+                MinecraftClient client = MinecraftClient.getInstance();
                 if (client != null) {
                     client.execute(() -> {
-                        if (client.player != null && client.getConnection() != null) {
-                            client.getConnection().sendChat(message);
+                        if (client.player != null && client.getNetworkHandler() != null) {
+                            client.getNetworkHandler().sendChatMessage(message);
                         }
                     });
                 }
