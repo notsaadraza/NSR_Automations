@@ -1,4 +1,4 @@
-name: Build Minecraft Mod
+name: Build Minecraft Mod 26.2
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.5'
+          gradle-version: '9.0'
 
       - name: Build with Gradle
         run: gradle build
@@ -31,5 +31,5 @@ jobs:
       - name: Upload Build Artifact (.jar)
         uses: actions/upload-artifact@v4
         with:
-          name: NSR_Automations-Mod
+          name: NSR_Automations-26.2
           path: build/libs/*.jar
