@@ -13,29 +13,21 @@ import java.util.regex.Pattern;
 
 public class NSRAutomationsClient implements ClientModInitializer {
 
-    // Regex pattern to capture math expressions from chat
     private static final Pattern MATH_PATTERN = Pattern.compile("(?i)(?:solve|calculate|what is)?\\s*([0-9+\\-*/xX^().\\s]+)");
-    
-    // Regex pattern for Fast-Type games (e.g., "Type -> dungeon")
     private static final Pattern TYPE_GAME_PATTERN = Pattern.compile("(?i)Type\\s*->\\s*([a-zA-Z0-9_]+)");
 
-    // Scheduled executor to handle 2-3 seconds natural delay before answering
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
     private static final Random RANDOM = new Random();
 
     @Override
     public void onInitializeClient() {
-        // Register event listener for incoming chat messages safely
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, instant) -> {
             if (message == null) return;
             String messageText = message.getString();
             
             if (messageText == null || messageText.isEmpty()) return;
 
-            // Process math games using the built-in calculator
             processMathGame(messageText);
-            
-            // Process type/chat games automatically
             processTypeGame(messageText);
         });
     }
@@ -46,7 +38,6 @@ public class NSRAutomationsClient implements ClientModInitializer {
             if (matcher.find()) {
                 String expression = matcher.group(1).trim();
                 
-                // Ensure it contains numbers and math operators to avoid false triggers
                 if (expression.matches(".*[0-9]+.*") && expression.matches(".*[+\\-*/xX^].*")) {
                     double result = eval(expression);
                     int finalResult = (int) Math.round(result);
@@ -55,11 +46,10 @@ public class NSRAutomationsClient implements ClientModInitializer {
                 }
             }
         } catch (Exception e) {
-            // Suppress unexpected parsing exceptions gracefully
+            // Suppress parsing errors
         }
     }
 
-    // Built-in lightweight calculator for evaluating expressions safely
     private double eval(String str) {
         str = str.replaceAll("[xX]", "*");
         return new Object() {
@@ -88,8 +78,8 @@ public class NSRAutomationsClient implements ClientModInitializer {
             double parseExpression() {
                 double x = parseTerm();
                 for (;;) {
-                    if      (eat('+')) x += parseTerm(); // addition
-                    else if (eat('-')) x -= parseTerm(); // subtraction
+                    if      (eat('+')) x += parseTerm();
+                    else if (eat('-')) x -= parseTerm();
                     else return x;
                 }
             }
@@ -97,29 +87,29 @@ public class NSRAutomationsClient implements ClientModInitializer {
             double parseTerm() {
                 double x = parseFactor();
                 for (;;) {
-                    if      (eat('*')) x *= parseFactor(); // multiplication
-                    else if (eat('/')) x /= parseFactor(); // division
+                    if      (eat('*')) x *= parseFactor();
+                    else if (eat('/')) x /= parseFactor();
                     else return x;
                 }
             }
 
             double parseFactor() {
-                if (eat('+')) return parseFactor(); // unary plus
-                if (eat('-')) return -parseFactor(); // unary minus
+                if (eat('+')) return parseFactor();
+                if (eat('-')) return -parseFactor();
 
                 double x;
                 int startPos = this.pos;
-                if (eat('(')) { // parentheses
+                if (eat('(')) {
                     x = parseExpression();
                     eat(')');
-                } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
+                } else if ((ch >= '0' && ch <= '9') || ch == '.') {
                     while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
                     x = Double.parseDouble(str.substring(startPos, this.pos));
                 } else {
                     throw new RuntimeException("Unexpected: " + (char)ch);
                 }
 
-                if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
+                if (eat('^')) x = Math.pow(x, parseFactor());
 
                 return x;
             }
@@ -136,12 +126,11 @@ public class NSRAutomationsClient implements ClientModInitializer {
                 }
             }
         } catch (Exception e) {
-            // Suppress unexpected parsing exceptions gracefully
+            // Suppress parsing errors
         }
     }
 
     private void delayedSendChatMessage(String message) {
-        // Generate a random delay between 2000ms (2 seconds) and 3000ms (3 seconds) to look natural
         long delay = 2000 + RANDOM.nextInt(1000);
 
         SCHEDULER.schedule(() -> {
@@ -155,7 +144,7 @@ public class NSRAutomationsClient implements ClientModInitializer {
                     });
                 }
             } catch (Exception e) {
-                // Handle thread execution safety
+                // Thread safety handling
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
