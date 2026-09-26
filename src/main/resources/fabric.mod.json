@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "nsr_automations",
+  "version": "1.0.0",
+  "name": "NSR Automations",
+  "description": "An automation mod built for server chat games and utilities.",
+  "authors": [
+    "Saad"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.nsrautomations.NSRAutomationsClient"
+    ]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "*",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
