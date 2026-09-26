@@ -1,38 +1,42 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
-    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
 }
 
-version = '1.0.0'
-group = 'com.nsrautomations'
+version = project.mod_version
+group = project.maven_group
 
 base {
-    archivesName = 'NSR_Automations'
+    archivesName = project.archives_base_name
 }
 
 repositories {
-    // Add custom repositories here if needed
+    // add extra maven repos here if you need any
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:26.2"
-    mappings "net.fabricmc:yarn:26.2+build.1:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.19.3"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.152.1+26.2"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    // No "mappings" line here on purpose: from 26.1 onward Minecraft ships
+    // unobfuscated, so Loom defaults to Mojang's official mappings and there's
+    // nothing to remap. This is also why fabric-loader/fabric-api below use
+    // plain "implementation" instead of the old "modImplementation".
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+    it.options.encoding = "UTF-8"
 }
 
 processResources {
     inputs.property "version", project.version
-
+    filteringCharset "UTF-8"
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(17)
-}
-
-java {
-    withSourcesJar()
 }
