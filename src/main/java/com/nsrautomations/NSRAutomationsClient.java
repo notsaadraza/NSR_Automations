@@ -13,22 +13,19 @@ import java.util.regex.Pattern;
 
 public class NSRAutomationsClient implements ClientModInitializer {
 
-    // Matches lines like: "| Solve \u2192 3 * 4"  or  "| Solve \u2192 \u221a100"
-    // Anchored per-line (MULTILINE) so it works whether the server sends the
-    // 3-line box as one Text with embedded newlines, or as 3 separate messages.
-    // Accepts both the real arrow (\u2192) the server uses and a plain "->" as a fallback.
+    // Ultra-flexible Math Pattern: Har tarah ke prefix, colors, aur separators (->, →, `:`, =) ko support karta hai
     private static final Pattern MATH_PATTERN = Pattern.compile(
-            "(?im)^\\s*\\|\\s*Solve\\s*(?:\u2192|->)\\s*(.+?)\\s*$");
+            "(?im)^.*?(?:\\b(?:solve|calculate)\\b)[^\\r\\n]*?(?:\u2192|->|:|=)\\s*(.+?)\\s*$");
 
     // Only characters a real math prompt from this server should contain.
     private static final Pattern MATH_EXPRESSION_VALIDATOR =
             Pattern.compile("^[0-9+\\-*/xX^().\\s\u221a\u00d7\u00f7]+$");
 
-    // Matches lines like: "| Type \u2192 quarterback"
+    // Ultra-flexible Type Pattern: Fast-type games ke liye har variation ko catch karega
     private static final Pattern TYPE_GAME_PATTERN = Pattern.compile(
-            "(?im)^\\s*\\|\\s*Type\\s*(?:\u2192|->)\\s*(.+?)\\s*$");
+            "(?im)^.*?(?:\\btype\\b)[^\\r\\n]*?(?:\u2192|->|:|=)\\s*([a-zA-Z0-9_]+)\\s*$");
 
-    // Scheduled executor to handle natural delay before answering
+    // Scheduled executor to handle 2-3 seconds natural delay before answering
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
     private static final Random RANDOM = new Random();
 
@@ -47,9 +44,8 @@ public class NSRAutomationsClient implements ClientModInitializer {
             // for certain whether this server sends "| Solve -> ..." as a system
             // message (sender == null) or as chat from a fake/console account, and
             // guessing wrong would silently swallow every real prompt. Instead we
-            // rely entirely on the strict "| Solve -> ..." / "| Type -> ..." line
-            // match below, which is specific enough that no ordinary player chat
-            // will ever accidentally match it.
+            // rely entirely on the strict line match below, which is specific enough 
+            // that no ordinary player chat will ever accidentally match it.
             String messageText = message.getString();
             if (messageText == null || messageText.isEmpty()) return;
 
@@ -195,7 +191,7 @@ public class NSRAutomationsClient implements ClientModInitializer {
     }
 
     private void delayedSendChatMessage(String message) {
-        // Delay set to 2.00s - 2.50s (2000ms to 2500ms)
+        // Delay set precisely to 2.00s - 2.50s (2000ms to 2500ms)
         long delay = 2000 + RANDOM.nextInt(500);
 
         SCHEDULER.schedule(() -> {
@@ -203,8 +199,8 @@ public class NSRAutomationsClient implements ClientModInitializer {
                 Minecraft client = Minecraft.getInstance();
                 if (client != null) {
                     client.execute(() -> {
-                        if (client.player != null && client.getNetworkHandler() != null) {
-                            client.getNetworkHandler().sendChatMessage(message);
+                        if (client.player != null && client.getConnection() != null) {
+                            client.getConnection().sendChatMessage(message);
                         }
                     });
                 }
