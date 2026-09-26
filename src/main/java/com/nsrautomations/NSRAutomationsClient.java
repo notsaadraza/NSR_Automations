@@ -200,7 +200,7 @@ public class NSRAutomationsClient implements ClientModInitializer {
                 if (client != null) {
                     client.execute(() -> {
                         if (client.player != null && client.getConnection() != null) {
-                            client.getConnection().sendChatMessage(message);
+                            client.getConnection().sendChat(message);
                         }
                     });
                 }
