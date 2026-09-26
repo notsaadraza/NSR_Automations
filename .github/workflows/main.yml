@@ -1,17 +1,20 @@
-name: Build NSR Automations 26.2
+name: build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 25
@@ -19,17 +22,17 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
+          cache: 'gradle'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.10'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: gradle build
+        run: ./gradlew build
 
-      - name: Upload Build Artifact (.jar)
+      - name: Upload built mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: nsr-automations-26.2
+          name: nsr-automations-jar
           path: build/libs/*.jar
+          if-no-files-found: error
