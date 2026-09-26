@@ -110,9 +110,10 @@ public class NSRAutomationsClient implements ClientModInitializer {
     // Supports + - * / ^ (power), parentheses, unary +/-, and now:
     //   \u221a  (square root, e.g. \u221a100)
     //   \u00d7 \u00f7 (multiply/divide symbols, as alternates to * and /)
-    private double eval(String str) {
-        str = str.replace('\u00d7', '*').replace('\u00f7', '/');
-        str = str.replaceAll("[xX]", "*");
+    private double eval(String rawExpression) {
+        String processed = rawExpression.replace('\u00d7', '*').replace('\u00f7', '/');
+        processed = processed.replaceAll("[xX]", "*");
+        final String str = processed; // must be effectively final to be used inside the anonymous class below
         return new Object() {
             int pos = -1, ch;
 
