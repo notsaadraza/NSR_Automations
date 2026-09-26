@@ -2,7 +2,7 @@ package com.nsrautomations;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -199,11 +199,11 @@ public class NSRAutomationsClient implements ClientModInitializer {
 
         SCHEDULER.schedule(() -> {
             try {
-                MinecraftClient client = MinecraftClient.getInstance();
+                Minecraft client = Minecraft.getInstance();
                 if (client != null) {
                     client.execute(() -> {
-                        if (client.player != null && client.getNetworkHandler() != null) {
-                            client.getNetworkHandler().sendChatMessage(message);
+                        if (client.player != null && client.getConnection() != null) {
+                            client.getConnection().sendChat(message);
                         }
                     });
                 }
